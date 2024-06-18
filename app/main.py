@@ -32,7 +32,7 @@ def main():
                     length = len(str)
         response = ""
         if status == "200 OK":
-            response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + length+"\r\n\r\n"+str
+            response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + str(length)+"\r\n\r\n"+str
         else :
             response = "HTTP/1.1 " + status
         
