@@ -22,11 +22,8 @@ def main():
         content = extract_path(request)
         length = len(content)
         status = "200 OK"
-        response = ""
-        if status == "200 OK":
-            response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + str(length)+"\r\n\r\n"+content
-        else :
-            response = "HTTP/1.1 " + status+"\r\n\r\n"
+        response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + str(length)+"\r\n\r\n"+content
+        
         
         client_socket.sendall(response.encode('utf-8'))
 
