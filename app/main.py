@@ -2,12 +2,14 @@ import socket
 
 def extract_path(request):
     lines = request.splitlines()
-    if lines:
-        request_line = lines[0].strip()
-        parts = request_line.split()
-        if len(parts)>=2:
-            return parts[1]
-    return None;
+    response_body = ""
+    for i in range(len(lines)):
+        if lines[i].find("User-Agent") != -1 :
+            response_body = lines[i]
+            break;
+    resp_cont = response_body.split();
+    return resp_cont[1];
+    
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!")
@@ -17,19 +19,9 @@ def main():
     while True:
         client_socket, client_address = server_socket.accept()
         request = client_socket.recv(1024).decode('utf-8')
-        path = extract_path(request)
-        content = ""
-        length = 0
+        content = extract_path(request)
+        length = len(content)
         status = "200 OK"
-        if extract_path(request) != None:
-            a = extract_path(request).split('/')
-            
-            if len(extract_path(request))>1: 
-                if a[1] != "echo" : 
-                    status = "404 Not Found"
-                else :
-                    content = a[2]
-                    length = len(content)
         response = ""
         if status == "200 OK":
             response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + str(length)+"\r\n\r\n"+content
