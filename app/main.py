@@ -18,13 +18,27 @@ def main():
         client_socket, client_address = server_socket.accept()
         request = client_socket.recv(1024).decode('utf-8')
         path = extract_path(request)
-        if path == '/':
-            response = "HTTP/1.1 200 OK\r\n\r\n"
-            client_socket.sendall(response.encode('utf-8'))
+        str = ""
+        length = 0
+        status = "200 OK"
+        if extract_path(request) != None:
+            a = extract_path(request).split('/')
+            
+            if len(extract_path(request))>1: 
+                if a[1] != "echo" : 
+                    status = "404 NOT FOUND"
+                else :
+                    str = a[2]
+                    length = len(str)
+        response = ""
+        if status == "200 OK":
+            response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + length+"\r\n\r\n"+str
+        else :
+            response = "HTTP/1.1 " + status
+        
+        client_socket.sendall(response.encode('utf-8'))
 
-        else: 
-            response = "HTTP/1.1 404 Not Found\r\n\r\n"
-            client_socket.sendall(response.encode('utf-8'))
+        
     
         client_socket.close()
 
