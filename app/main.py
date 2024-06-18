@@ -26,7 +26,7 @@ def main():
             
             if len(extract_path(request))>1: 
                 if a[1] != "echo" : 
-                    status = "404 NOT FOUND"
+                    status = "404 Not Found"
                 else :
                     content = a[2]
                     length = len(content)
