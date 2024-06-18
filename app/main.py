@@ -34,7 +34,7 @@ def main():
         if status == "200 OK":
             response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + str(length)+"\r\n\r\n"+content
         else :
-            response = "HTTP/1.1 " + status
+            response = "HTTP/1.1 " + status+"\r\n"
         
         client_socket.sendall(response.encode('utf-8'))
 
