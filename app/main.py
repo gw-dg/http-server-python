@@ -8,7 +8,10 @@ def extract_path(request):
             response_body = lines[i]
             break;
     resp_cont = response_body.split();
-    return resp_cont[1];
+    if response_body=="":
+        return ""
+    else: 
+        return resp_cont[1];
     
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
