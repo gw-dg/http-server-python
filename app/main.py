@@ -18,7 +18,7 @@ def main():
         client_socket, client_address = server_socket.accept()
         request = client_socket.recv(1024).decode('utf-8')
         path = extract_path(request)
-        str = ""
+        content = ""
         length = 0
         status = "200 OK"
         if extract_path(request) != None:
@@ -28,11 +28,11 @@ def main():
                 if a[1] != "echo" : 
                     status = "404 NOT FOUND"
                 else :
-                    str = a[2]
-                    length = len(str)
+                    content = a[2]
+                    length = len(content)
         response = ""
         if status == "200 OK":
-            response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + str(length)+"\r\n\r\n"+str
+            response = "HTTP/1.1 " + status+ "\r\nContent-Type: text/plain\r\nContent-Length: " + str(length)+"\r\n\r\n"+content
         else :
             response = "HTTP/1.1 " + status
         
