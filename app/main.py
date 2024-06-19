@@ -9,7 +9,7 @@ def extract_path(request):
     elif path.startswith("/echo"):
         response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(path[6:])}\r\n\r\n{path[6:]}"
     elif path.startswith("/user-agent"):
-        content = data[0].split(" ")[1]
+        content = data[2].split(" ")[1]
         response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(content)}\r\n\r\n{content}"
     else :
         response = "HTTP/1.1 404 Not Found\r\n\r\n"
