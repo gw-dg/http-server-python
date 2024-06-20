@@ -37,12 +37,57 @@ def extract_path(request):
                 response_body = compressed_body
             else:
                 headers["Content-Length"] = str(len(response_body))
+                response_body = response_body.encode('utf-8')  # Convert to bytes
 
-            headers_formatted = "\r\n".join(f"{key}: {value}" for key, value in headers.items())
-            response = f"HTTP/1.1 200 OK\r\n{headers_formatted}\r\n\r\n"
-            response = response + response_body if isinstance(response_body, bytes) else response + response_body
+            headers_formatted = "\r\n".join(f"{key}: {value}" for key, value in headers.items()).encode('utf-8')
+            response = b"HTTP/1.1 200 OK\r\n" + headers_formatted + b"\r\n\r\n" + response_body
+        
+        elif path.startswith("/user-agent"):
+            content = data[2].split(" ")[1]
+            response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(content)}\r\n\r\n{content}"
+            response = response.encode('utf-8')
+        
+        elif path.startswith("/files"):
+            directory = sys.argv[2]
+            filename = path[7:]
+            try:
+                with open(f"/{directory}/{filename}", "r") as f:
+                    body = f.read()
+                response = f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(body)}\r\n\r\n{body}"
+                response = response.encode('utf-8')
+            except Exception as e:
+                response = "HTTP/1.1 404 Not Found\r\n\r\n".encode('utf-8')
+        
+        else:
+            response = "HTTP/1.1 404 Not Found\r\n\r\n".encode('utf-8')
+    
+    elif request_type == "POST":
+        if path.startswith("/files"):
+            directory = sys.argv[2]
+            filename = path.split("/")[2]
+            content = data[-1]
+            with open(f"/{directory}/{filename}", "w") as f:
+                f.write(content)
+            response = "HTTP/1.1 201 Created\r\n\r\n".encode('utf-8')
+    
+    return response
 
-        # elif path.startswith("/echo"):
+# Main function to run the server
+def main():
+    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
+    
+    while True:
+        client_socket, client_address = server_socket.accept()
+        request = client_socket.recv(1024).decode('utf-8')
+        response = extract_path(request)
+        client_socket.sendall(response)
+        client_socket.close()
+
+if __name__ == "__main__":
+    main()
+
+
+# elif path.startswith("/echo"):
         #     response_body = path[6:]
         #     headers = {
         #         "Content-Type": "text/plain",
@@ -55,46 +100,3 @@ def extract_path(request):
             
         #     headers_formatted = "\r\n".join(f"{key}: {value}" for key, value in headers.items())
         #     response = f"HTTP/1.1 200 OK\r\n{headers_formatted}\r\n\r\n{response_body}"
-        
-        elif path.startswith("/user-agent"):
-            content = data[2].split(" ")[1]
-            response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(content)}\r\n\r\n{content}"
-        
-        elif path.startswith("/files"):
-            directory = sys.argv[2]
-            filename = path[7:]
-            try:
-                with open(f"/{directory}/{filename}", "r") as f:
-                    body = f.read()
-                response = f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(body)}\r\n\r\n{body}"
-            except Exception as e:
-                response = f"HTTP/1.1 404 Not Found\r\n\r\n"
-        
-        else:
-            response = "HTTP/1.1 404 Not Found\r\n\r\n"
-    
-    elif request_type == "POST":
-        if path.startswith("/files"):
-            directory = sys.argv[2]
-            filename = path.split("/")[2]
-            content = data[-1]
-            with open(f"/{directory}/{filename}", "w") as f:
-                f.write(content)
-            response = "HTTP/1.1 201 Created\r\n\r\n"
-    
-    return response
-
-# Main function to run the server
-def main():
-    
-    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-    
-    while True:
-        client_socket, client_address = server_socket.accept()
-        request = client_socket.recv(1024).decode('utf-8')
-        response = extract_path(request)
-        client_socket.sendall(response.encode('utf-8'))
-        client_socket.close()
-
-if __name__ == "__main__":
-    main()
