@@ -1,6 +1,7 @@
 import socket
-import os
 import sys
+import gzip
+import io
 
 # Function to extract path from request and handle different endpoints
 def extract_path(request):
@@ -21,16 +22,39 @@ def extract_path(request):
         elif path.startswith("/echo"):
             response_body = path[6:]
             headers = {
-                "Content-Type": "text/plain",
-                "Content-Length": str(len(response_body))
+                "Content-Type": "text/plain"
             }
 
             # Handle gzip compression
             if accept_encoding and "gzip" in accept_encoding:
+                # Compress the response body using gzip
+                out = io.BytesIO()
+                with gzip.GzipFile(fileobj=out, mode="w") as gz:
+                    gz.write(response_body.encode('utf-8'))
+                compressed_body = out.getvalue()
                 headers["Content-Encoding"] = "gzip"
-            
+                headers["Content-Length"] = str(len(compressed_body))
+                response_body = compressed_body
+            else:
+                headers["Content-Length"] = str(len(response_body))
+
             headers_formatted = "\r\n".join(f"{key}: {value}" for key, value in headers.items())
-            response = f"HTTP/1.1 200 OK\r\n{headers_formatted}\r\n\r\n{response_body}"
+            response = f"HTTP/1.1 200 OK\r\n{headers_formatted}\r\n\r\n"
+            response = response.encode('utf-8') + response_body if isinstance(response_body, bytes) else response.encode('utf-8') + response_body.encode('utf-8')
+
+        # elif path.startswith("/echo"):
+        #     response_body = path[6:]
+        #     headers = {
+        #         "Content-Type": "text/plain",
+        #         "Content-Length": str(len(response_body))
+        #     }
+
+        #     # Handle gzip compression
+        #     if accept_encoding and "gzip" in accept_encoding:
+        #         headers["Content-Encoding"] = "gzip"
+            
+        #     headers_formatted = "\r\n".join(f"{key}: {value}" for key, value in headers.items())
+        #     response = f"HTTP/1.1 200 OK\r\n{headers_formatted}\r\n\r\n{response_body}"
         
         elif path.startswith("/user-agent"):
             content = data[2].split(" ")[1]
