@@ -40,7 +40,7 @@ def extract_path(request):
 
             headers_formatted = "\r\n".join(f"{key}: {value}" for key, value in headers.items())
             response = f"HTTP/1.1 200 OK\r\n{headers_formatted}\r\n\r\n"
-            response = response.encode('utf-8') + response_body if isinstance(response_body, bytes) else response.encode('utf-8') + response_body.encode('utf-8')
+            response = response + response_body if isinstance(response_body, bytes) else response + response_body
 
         # elif path.startswith("/echo"):
         #     response_body = path[6:]
