@@ -18,7 +18,7 @@ def extract_path(request):
 
     if request_type == "GET":
         if path == "/":
-            response = "HTTP/1.1 200 OK\r\n\r\n"
+            response = "HTTP/1.1 200 OK\r\n\r\n".encode('utf-8')
         elif path.startswith("/echo"):
             response_body = path[6:]
             headers = {
