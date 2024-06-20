@@ -8,27 +8,48 @@ def extract_path(request):
     request_type = data[0].split(" ")[0]
     path = data[0].split(" ")[1]
     
+    # Extract Accept-Encoding header if it exists
+    accept_encoding = None
+    for line in data:
+        if line.startswith("Accept-Encoding:"):
+            accept_encoding = line.split(": ")[1]
+            break
+
     if request_type == "GET":
         if path == "/":
             response = "HTTP/1.1 200 OK\r\n\r\n"
         elif path.startswith("/echo"):
-            response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(path[6:])}\r\n\r\n{path[6:]}"
+            response_body = path[6:]
+            headers = {
+                "Content-Type": "text/plain",
+                "Content-Length": str(len(response_body))
+            }
+
+            # Handle gzip compression
+            if accept_encoding and "gzip" in accept_encoding:
+                headers["Content-Encoding"] = "gzip"
+            
+            headers_formatted = "\r\n".join(f"{key}: {value}" for key, value in headers.items())
+            response = f"HTTP/1.1 200 OK\r\n{headers_formatted}\r\n\r\n{response_body}"
+        
         elif path.startswith("/user-agent"):
             content = data[2].split(" ")[1]
             response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(content)}\r\n\r\n{content}"
+        
         elif path.startswith("/files"):
             directory = sys.argv[2]
             filename = path[7:]
-            print(directory, filename)
             try:
                 with open(f"/{directory}/{filename}", "r") as f:
                     body = f.read()
                 response = f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(body)}\r\n\r\n{body}"
             except Exception as e:
                 response = f"HTTP/1.1 404 Not Found\r\n\r\n"
+        
         else:
             response = "HTTP/1.1 404 Not Found\r\n\r\n"
-    elif request_type == "POST" :
+    
+    elif request_type == "POST":
         if path.startswith("/files"):
             directory = sys.argv[2]
             filename = path.split("/")[2]
@@ -36,7 +57,6 @@ def extract_path(request):
             with open(f"/{directory}/{filename}", "w") as f:
                 f.write(content)
             response = "HTTP/1.1 201 Created\r\n\r\n"
-            
     
     return response
 
